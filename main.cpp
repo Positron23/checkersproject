@@ -54,7 +54,7 @@ class CheckerBoard {
         void printBoard(){
             for (int i = 0; i < 8; i++){
                 for (int j = 0; j < 8; j++){
-                    cout << board[i][j] << EMP;
+                    cout << board[i][j] ;
                 }
                 cout << endl;
             }
@@ -168,6 +168,9 @@ class CheckerBoard {
             }
             return 0;
         }
+        void makeMove(int x, int x2) { //Function to make a move and update checkers board
+            int pos = canMakeMove(x, x2, 'B');
+        }
         // Returns true if the square given by the position number is empty
         bool isEmpty(short positionNum){
             short row = positionDict[positionNum][0];
@@ -179,7 +182,16 @@ class CheckerBoard {
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
+    int x, x2;
     CheckerBoard CB;
     CB.printBoard();
+    while(x!=-1||x2!=-1) {
+        printf("You are on the black side. Please enter the coordinates of the piece you want to move: \n");
+        scanf("%d", &x);
+        printf("Please enter the position you want to move to \n");
+        scanf("%d", &x2);
+        CB.makeMove(x, x2);
+        CB.printBoard();
+    }
     return 0;
 }
