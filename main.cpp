@@ -77,49 +77,32 @@ class CheckerBoard {
                 if (piece == 'b'){
                     // not a taking move
                     if (abs(fR-iR) == 1 && abs(fC-iC) == 1 && isEmpty(fPosition) && fPosition > iPosition){
-                        board[iR][iC] = EMP; // clear initial position
-                        if (fPosition >= 29){ // check for promotion
-                            board[fR][fC] = 'B';
-                        }
-                        else board[fR][fC] = piece;
+
                         return 1;
                     }
                     // taking move
                     if (abs(fR-iR)==2 && abs(fC-iC)==2 && fPosition>iPosition){
                         // take to the left or right, respectively
                         if (fPosition-iPosition == 9 || fPosition-iPosition==7){
-                            board[iR][iC] = EMP;
-                            board[(fR+iR)/2][(fC+iC)/2] = EMP;
-                            board[fR][fC] = piece;
-                            if (fPosition >= 29) { // check for promotion
-                                board[fR][fC] = 'B';
-                            }
+
                             return 2;
                         }
 
                     }
                 }
-                // WHITE non-king
-                if (piece == 'w'){
+                // RED non-king
+                if (piece == 'r'){
                     // not a taking move
                     if (abs(fR-iR) == 1 && abs(fC-iC) == 1 && isEmpty(fPosition) && fPosition < iPosition){
-                        board[iR][iC] = EMP; // clear initial position
-                        if (fPosition <= 4){ // check for promotion
-                            board[fR][fC] = 'W';
-                        }
-                        else board[fR][fC] = piece;
+
                         return 1;
                     }
                     // taking move
-                    if (abs(fR-iR)==2 && abs(fC-iC)==2 && fPosition>iPosition){
+                    if (abs(fR-iR)==2 && abs(fC-iC)==2 && fPosition<iPosition){
                         // take to the left or right, respectively
                         if (fPosition-iPosition == -9 || fPosition-iPosition == -7){
-                            board[iR][iC] = EMP;
-                            board[(fR+iR)/2][(fC+iC)/2] = EMP;
-                            board[fR][fC] = piece;
-                            if (fPosition <= 4) { // check for promotion
-                                board[fR][fC] = 'B';
-                            }
+
+                            return 2;
                         }
 
                     }
@@ -128,37 +111,31 @@ class CheckerBoard {
                 if (piece == 'B'){
                     // not a taking move
                     if (abs(fR-iR) == 1 && abs(fC-iC) == 1 && isEmpty(fPosition)){
-                        board[iR][iC] = EMP; // clear initial position
-                        board[fR][fC] = piece;
+
                         return 1;
                     }
                     // taking move
                     if (abs(fR-iR)==2 && abs(fC-iC)==2){
                         // take to the left or right, respectively
                         if (fPosition-iPosition == 9 || fPosition-iPosition==7){
-                            board[iR][iC] = EMP;
-                            board[(fR+iR)/2][(fC+iC)/2] = EMP;
-                            board[fR][fC] = piece;
+
                             return 2;
                         }
 
                     }
                 }
-                // WHITE king
-                if (piece == 'W'){
+                // RED king
+                if (piece == 'R'){
                     // not a taking move
                     if (abs(fR-iR) == 1 && abs(fC-iC) == 1 && isEmpty(fPosition)){
-                        board[iR][iC] = EMP; // clear initial position
-                        board[fR][fC] = piece;
+
                         return 1;
                     }
                     // taking move
                     if (abs(fR-iR)==2 && abs(fC-iC)==2){
                         // take to the left or right, respectively
                         if (fPosition-iPosition == -9 || fPosition-iPosition == -7){
-                            board[iR][iC] = EMP;
-                            board[(fR+iR)/2][(fC+iC)/2] = EMP;
-                            board[fR][fC] = piece;
+
                             return 2;
                         }
 
@@ -168,8 +145,26 @@ class CheckerBoard {
             }
             return 0;
         }
-        void makeMove(int x, int x2) { //Function to make a move and update checkers board
-            int pos = canMakeMove(x, x2, 'B');
+        int makeMove(int iPosition, int fPosition, char colour) { //Function to make a move and update checkers board
+            int result = canMakeMove(iPosition, fPosition, colour);
+            if (result==0) return 0;
+            // Initial position row and column
+            short iR = positionDict[iPosition][0];
+            short iC = positionDict[iPosition][1];
+            // Final position row and column
+            short fR = positionDict[fPosition][0];
+            short fC = positionDict[fPosition][1];
+            char piece = board[iR][iC];
+
+            board[fR][fC] = piece;
+            board[iR][iC] = EMP;
+
+            if (result==2){
+                board[(fR+iR)/2][(fC+iC)/2] = EMP;
+            }
+            if (colour==BLACK && fPosition>=29) board[fR][fC] = 'B';
+            if (colour==RED && fPosition<=4) board[fR][fC] = 'R';
+            return result;
         }
         // Returns true if the square given by the position number is empty
         bool isEmpty(short positionNum){
@@ -178,19 +173,35 @@ class CheckerBoard {
             return board[row][col] == EMP;
         }
 
+
+
 };
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
-    int x, x2;
+    int x = 0, x2=0;
     CheckerBoard CB;
     CB.printBoard();
+    char colours[] = {'B', 'R'};
+    int turnNumber = 0;
+    int result;
     while(x!=-1||x2!=-1) {
-        printf("You are on the black side. Please enter the coordinates of the piece you want to move: \n");
+        if (turnNumber%2) {
+            printf("You are on the red side. Please enter the coordinates of the piece you want to move: \n");
+        }
+        else {
+            printf("You are on the black side. Please enter the coordinates of the piece you want to move: \n");
+        }
         scanf("%d", &x);
         printf("Please enter the position you want to move to \n");
         scanf("%d", &x2);
-        CB.makeMove(x, x2);
+        result = CB.makeMove(x, x2, colours[turnNumber%2]);
+        if (result>0){
+            turnNumber++;
+        }
+        else{
+            printf("Try again \n");
+        }
         CB.printBoard();
     }
     return 0;
