@@ -6,6 +6,11 @@ class CheckerBoard {
     const char EMP = '.';
     const char BLACK = 'B';
     const char RED = 'R';
+    struct katie {
+        int row;
+        int col;
+        char c;
+    };
     // Board to be changed and used
     // Is from black's perspective
     char board[8][8];
@@ -174,8 +179,21 @@ class CheckerBoard {
             return board[row][col] == EMP;
         }
 
-        vector<pair<int,int>> possibleMoves() {
-            vector<pair<int,int>> pM;
+        vector<katie> possibleMoves() {
+            vector<katie> pM;
+            for(int i=1; i<33; i++)
+            {
+                for(int j=1; j<33; j++)
+                {
+                    char c = board[positionDict[i][0]][positionDict[j][1]];
+                    if (canMakeMove(i, j, c))
+                    {
+                        katie t;
+                        t.c = c; t.row = positionDict[j][0]; t.col = positionDict[j][1];
+                        pM.push_back(t);
+                    }
+                }
+            } /*
             for(int i = 0; i<8; i++)
             {
                 for (int j = 0; j<8; j++)
@@ -212,6 +230,7 @@ class CheckerBoard {
                     }
                 }
             }
+            */
             return pM;
         }
 };
