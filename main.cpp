@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 using namespace std;
 
 class CheckerBoard {
@@ -173,8 +174,46 @@ class CheckerBoard {
             return board[row][col] == EMP;
         }
 
-
-
+        vector<pair<int,int>> possibleMoves() {
+            vector<pair<int,int>> pM;
+            for(int i = 0; i<8; i++)
+            {
+                for (int j = 0; j<8; j++)
+                {
+                    if(board[i][j] == 'r')
+                    {
+                        if((i+1) < 8 && (j+1) < 8 && board[i+1][j+1] == EMP)
+                        {
+                            pair <int, int> t;
+                            t.first = i+1; t.second = j+1;
+                            pM.push_back(t);
+                        }
+                        if((i+1) < 8 && (j-1) > 0 && board[i+1][j-1] == EMP)
+                        {
+                            pair <int, int> t;
+                            t.first = i+1; t.second = j-1;
+                            pM.push_back(t);
+                        }
+                    }
+                    if(board[i][j] == 'b')
+                    {
+                        if((i-1) > 0 && (j+1) < 8 && board[i-1][j+1] == EMP)
+                        {
+                            pair <int, int> t;
+                            t.first = i-1; t.second = j+1;
+                            pM.push_back(t);
+                        }
+                        if((i-1) > 0 && (j-1) > 0 && board[i+1][j-1] == EMP)
+                        {
+                            pair <int, int> t;
+                            t.first = i-1; t.second = j-1;
+                            pM.push_back(t);
+                        }
+                    }
+                }
+            }
+            return pM;
+        }
 };
 
 int main() {
@@ -203,6 +242,10 @@ int main() {
             printf("Try again \n");
         }
         CB.printBoard();
+        vector<pair<int,int>> pM = CB.possibleMoves();
+        /*printf("%d", pM.size());
+        for(int i=0; i<pM.size(); i++) {printf("%d, %d \n", pM[i].first, pM[i].second);}
+         */
     }
     return 0;
 }
