@@ -2,15 +2,33 @@
 #include <vector>
 using namespace std;
 
+const char EMP = '.';
+const char BLACK = 'B';
+const char RED = 'R';
+const double INF = 1000000000000; // large number that will never be reached by static evalution
+
+/*
+struct piece {
+    int row;
+    int col;
+    char c;
+};
+ */
+struct Move {
+    int iPosition;
+    int fPosition;
+    char c;
+};
+
+struct line {
+    int iPosition;
+    int fPosition;
+    char c;
+    double eval;
+};
+
 class CheckerBoard {
-    const char EMP = '.';
-    const char BLACK = 'B';
-    const char RED = 'R';
-    struct katie {
-        int row;
-        int col;
-        char c;
-    };
+
     // Board to be changed and used
     // Is from black's perspective
     char board[8][8];
@@ -57,6 +75,18 @@ class CheckerBoard {
                 }
             }
         }
+        void setBoard(int row, int col, char c){
+            board[row][col] = c;
+        }
+        CheckerBoard copy(){
+            CheckerBoard ret;
+            for (int r = 0; r < 8; r++){
+                for (int c = 0; c < 8; c++){
+                    ret.setBoard(r, c, board[r][c]);
+                }
+            }
+            return ret;
+        }
         void printBoard(){
             for (int i = 0; i < 8; i++){
                 for (int j = 0; j < 8; j++){
@@ -64,6 +94,24 @@ class CheckerBoard {
                 }
                 cout << endl;
             }
+        }
+
+        char findWinner(){
+            int numRed = 0; int numBlack = 0;
+            for (int r = 0; r < 8; r++){
+                for (int c = 0; c < 8; c++){
+                    if (toupper(board[r][c]) == RED)
+                        numRed += 1;
+                    if (toupper(board[r][c]) == BLACK)
+                        numBlack += 1;
+                }
+            }
+            if (numRed == 0)
+                return BLACK;
+            else if (numBlack == 0)
+                return RED;
+            else
+                return EMP;
         }
         // Finds if it is possible to make a move from the initial position, iPosition, to the final position, fPosition
         // Returns a short, which is 1 if the move can be made, 0 if not, 2 if another move can be made
@@ -179,8 +227,8 @@ class CheckerBoard {
             return board[row][col] == EMP;
         }
 
-        vector<katie> possibleMoves() {
-            vector<katie> pM;
+        vector<Move> possibleMoves() {
+            vector<Move> pM;
             for(int i=1; i<33; i++)
             {
                 for(int j=1; j<33; j++)
@@ -188,8 +236,9 @@ class CheckerBoard {
                     char c = board[positionDict[i][0]][positionDict[j][1]];
                     if (canMakeMove(i, j, c))
                     {
-                        katie t;
-                        t.c = c; t.row = positionDict[j][0]; t.col = positionDict[j][1];
+                        Move t;
+                        //t.c = c; t.row = positionDict[j][0]; t.col = positionDict[j][1];
+                        t.iPosition = i; t.fPosition = j; t.c = c;
                         pM.push_back(t);
                     }
                 }
@@ -233,7 +282,81 @@ class CheckerBoard {
             */
             return pM;
         }
+
+        double static_evaluation() { // Simple evaluation function
+            int eval = 0;
+            for (int r = 0; r < 8; r++){
+                for (int c = 0; c < 8; c++){
+                    if (board[r][c] == 'r'){
+                        eval -= 1;
+                    }
+                    if (board[r][c] == 'R'){
+                        eval -= 3;
+                    }
+                    if (board[r][c] == 'b'){
+                        eval += 1;
+                    }
+                    if (board[r][c] == 'B'){
+                        eval += 3;
+                    }
+                }
+            }
+            return eval;
+        }
+
 };
+
+double minimax(CheckerBoard board, int depth, double alpha, double beta, char player){
+    if (depth == 0 || board.findWinner() != EMP)
+        return board.static_evaluation();
+
+    if (player == BLACK){
+        double maxEval = -1*INF;
+        double eval = maxEval;
+        Move bestMove;
+        vector<Move> pM = board.possibleMoves();
+        for (Move x: pM){
+            CheckerBoard clone = board.copy();
+            clone.makeMove(x.iPosition, x.fPosition, x.c);
+            eval = minimax(clone, depth - 1, alpha, beta, RED);
+            if (eval > maxEval){
+                maxEval = eval;
+                bestMove.iPosition = x.iPosition;
+                bestMove.fPosition = x.fPosition;
+                bestMove.c = x.c;
+            }
+            alpha = fmax(alpha, eval);
+            if ( alpha >= beta)
+                break;
+        }
+        cout << bestMove.iPosition << " to " << bestMove.fPosition << "\n";
+        return maxEval;
+    }
+    if (player == RED){
+        double minEval = INF;
+        double eval = minEval;
+        Move bestMove;
+        vector<Move> pM = board.possibleMoves();
+        for (Move x: pM){
+            CheckerBoard clone = board.copy();
+            clone.makeMove(x.iPosition, x.fPosition, x.c);
+            eval = minimax(clone, depth - 1, alpha, beta, BLACK);
+            if (eval < minEval){
+                minEval = eval;
+                bestMove.iPosition = x.iPosition;
+                bestMove.fPosition = x.fPosition;
+                bestMove.c = x.c;
+            }
+            beta = fmin(beta, eval);
+            if ( alpha >= beta)
+                break;
+        }
+        cout << bestMove.iPosition << " to " << bestMove.fPosition << "\n";
+        return minEval;
+    }
+
+
+}
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
@@ -261,10 +384,10 @@ int main() {
             printf("Try again \n");
         }
         CB.printBoard();
-        vector<pair<int,int>> pM = CB.possibleMoves();
-        /*printf("%d", pM.size());
-        for(int i=0; i<pM.size(); i++) {printf("%d, %d \n", pM[i].first, pM[i].second);}
-         */
+        vector<Move> pM = CB.possibleMoves();
+        printf("%d", pM.size());
+        for(int i=0; i<pM.size(); i++) {printf("%d, %d \n", pM[i].iPosition, pM[i].fPosition, pM[i].c);}
+
     }
     return 0;
 }
